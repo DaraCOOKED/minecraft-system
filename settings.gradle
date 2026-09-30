@@ -1,0 +1,2 @@
+// The project name; it also names the .jar file
+rootProject.name = 'QuestMaster'

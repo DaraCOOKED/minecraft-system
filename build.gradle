@@ -1,0 +1,25 @@
+// Build script for QuestMaster (Paper plugin)
+plugins {
+    id 'java'   // Compiles Java and builds the .jar
+}
+
+group = 'com.questmaster'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    // Paper's repository, where the Paper API is downloaded from
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+}
+
+dependencies {
+    // compileOnly = needed to compile, but NOT packed into our jar
+    // (the server already provides it at runtime)
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+}
+
+// Compile for Java 21 (required by Minecraft 1.21.x)
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
