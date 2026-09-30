@@ -3,6 +3,7 @@ package com.questmaster;
 import com.questmaster.command.RoleCommand;
 import com.questmaster.data.PlayerDataStorage;
 import com.questmaster.role.RoleManager;
+import com.questmaster.role.TabTitleListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -25,6 +26,7 @@ public class QuestMasterPlugin extends JavaPlugin {
 
         // Connect /role to its handler (declared in plugin.yml)
         getCommand("role").setExecutor(new RoleCommand(roleManager));
+        getServer().getPluginManager().registerEvents(new TabTitleListener(roleManager), this);
 
         getLogger().info("QuestMaster enabled!");
     }

@@ -96,6 +96,7 @@ public class RoleCommand implements TabExecutor {
         }
 
         roleManager.setRole(player.getUniqueId(), newRole);
+        com.questmaster.role.TabTitle.apply(player, newRole);
         player.sendMessage(ChatColor.GREEN + "Your role is now " + ChatColor.GOLD + newRole.getDisplayName() + ChatColor.GREEN + "!");
     }
 
