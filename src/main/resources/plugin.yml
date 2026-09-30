@@ -2,7 +2,7 @@
 name: QuestMaster
 version: 1.0.0
 main: com.questmaster.QuestMasterPlugin
-api-version: '1.21'   # works for all 1.21.x versions
+api-version: '1.21'
 description: Role, progression and quest system.
 
 commands:
@@ -15,3 +15,6 @@ permissions:
   questmaster.role:
     description: Allows using /role
     default: true   # everyone can use it
+  questmaster.bypass:
+    description: Switch role without waiting for the cooldown
+    default: op     # only operators

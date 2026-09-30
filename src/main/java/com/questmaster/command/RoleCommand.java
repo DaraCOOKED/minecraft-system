@@ -15,9 +15,12 @@ import java.util.List;
  * Handles the /role command:
  *   /role                 -> shows your current role
  *   /role list            -> shows all roles
- *   /role choose <role>   -> picks a role
+ *   /role choose <role>   -> picks a role (with a switch cooldown)
  */
 public class RoleCommand implements TabExecutor {
+
+    // Players with this permission can switch role without waiting
+    private static final String BYPASS_PERMISSION = "questmaster.bypass";
 
     private final RoleManager roleManager;
 
@@ -68,16 +71,40 @@ public class RoleCommand implements TabExecutor {
             return;
         }
 
-        Role role = Role.fromName(args[1]);
-        if (role == null) {
+        Role newRole = Role.fromName(args[1]);
+        if (newRole == null) {
             player.sendMessage(ChatColor.RED + "Unknown role. Use /role list to see all roles.");
             return;
         }
 
-        // Note: for now players can change role at any time.
-        // Switch rules (cooldown, cost) will be added once the spec says so.
-        roleManager.setRole(player.getUniqueId(), role);
-        player.sendMessage(ChatColor.GREEN + "Your role is now " + ChatColor.GOLD + role.getDisplayName() + ChatColor.GREEN + "!");
+        Role currentRole = roleManager.getRole(player.getUniqueId());
+
+        // Choosing the same role again changes nothing
+        if (currentRole == newRole) {
+            player.sendMessage(ChatColor.YELLOW + "You are already a " + newRole.getDisplayName() + ".");
+            return;
+        }
+
+        // Cooldown only applies when SWITCHING (the first choice is always free)
+        // and never for players with the bypass permission
+        if (currentRole != null && !player.hasPermission(BYPASS_PERMISSION)) {
+            long remaining = roleManager.getRemainingCooldownMillis(player.getUniqueId());
+            if (remaining > 0) {
+                player.sendMessage(ChatColor.RED + "You can switch role again in " + formatTime(remaining) + ".");
+                return;
+            }
+        }
+
+        roleManager.setRole(player.getUniqueId(), newRole);
+        player.sendMessage(ChatColor.GREEN + "Your role is now " + ChatColor.GOLD + newRole.getDisplayName() + ChatColor.GREEN + "!");
+    }
+
+    /** Turns milliseconds into text like "14m 52s". */
+    private String formatTime(long millis) {
+        long totalSeconds = (millis + 999) / 1000; // round up so we never show 0s
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return minutes + "m " + seconds + "s";
     }
 
     /** Auto-complete when players press TAB. */

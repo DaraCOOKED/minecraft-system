@@ -16,9 +16,12 @@ public class QuestMasterPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Copies config.yml into plugins/QuestMaster/ on the first run
+        saveDefaultConfig();
+
         // Storage first, because the RoleManager needs it
         PlayerDataStorage storage = new PlayerDataStorage(this);
-        roleManager = new RoleManager(storage);
+        roleManager = new RoleManager(storage, getConfig());
 
         // Connect /role to its handler (declared in plugin.yml)
         getCommand("role").setExecutor(new RoleCommand(roleManager));
@@ -28,7 +31,7 @@ public class QuestMasterPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Save roles when the server stops
+        // Save data when the server stops
         if (roleManager != null) {
             roleManager.save();
         }

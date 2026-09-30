@@ -21,6 +21,7 @@ import java.util.UUID;
  *   players:
  *     <player-uuid>:
  *       role: MINER
+ *       last-switch: 1767225600000   (time in milliseconds)
  */
 public class PlayerDataStorage {
 
@@ -32,42 +33,45 @@ public class PlayerDataStorage {
         this.file = new File(plugin.getDataFolder(), "playerdata.yml");
     }
 
-    /** Reads every saved player role from the file. */
-    public Map<UUID, Role> loadRoles() {
-        Map<UUID, Role> roles = new HashMap<>();
+    /** Reads every saved player from the file. */
+    public Map<UUID, PlayerData> loadAll() {
+        Map<UUID, PlayerData> result = new HashMap<>();
 
-        // First run: no file yet, so nobody has a role
+        // First run: no file yet, so nobody has data
         if (!file.exists()) {
-            return roles;
+            return result;
         }
 
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection players = yaml.getConfigurationSection("players");
         if (players == null) {
-            return roles;
+            return result;
         }
 
         for (String key : players.getKeys(false)) {
             try {
                 UUID uuid = UUID.fromString(key);
                 Role role = Role.fromName(players.getString(key + ".role", ""));
+                long lastSwitch = players.getLong(key + ".last-switch", 0L);
                 if (role != null) {
-                    roles.put(uuid, role);
+                    result.put(uuid, new PlayerData(role, lastSwitch));
                 }
             } catch (IllegalArgumentException e) {
                 // The key was not a valid UUID, so skip it
                 plugin.getLogger().warning("Skipping invalid entry in playerdata.yml: " + key);
             }
         }
-        return roles;
+        return result;
     }
 
-    /** Writes every player role to the file. */
-    public void saveRoles(Map<UUID, Role> roles) {
+    /** Writes every player to the file. */
+    public void saveAll(Map<UUID, PlayerData> allData) {
         YamlConfiguration yaml = new YamlConfiguration();
 
-        for (Map.Entry<UUID, Role> entry : roles.entrySet()) {
-            yaml.set("players." + entry.getKey() + ".role", entry.getValue().name());
+        for (Map.Entry<UUID, PlayerData> entry : allData.entrySet()) {
+            String path = "players." + entry.getKey();
+            yaml.set(path + ".role", entry.getValue().getRole().name());
+            yaml.set(path + ".last-switch", entry.getValue().getLastSwitchMillis());
         }
 
         try {
